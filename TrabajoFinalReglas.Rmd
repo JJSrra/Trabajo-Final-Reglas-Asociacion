@@ -24,7 +24,7 @@ library(mlbench)
 
 ## Lectura de los datos
 
-El dataset que se ha escogido para desarrollar este trabajo ha sido _Contraceptive Method Choice_, obtenido del repositorio de datasets de la Universidad de California-Irvine. Este conjunto de datos determina el método de anticoncepción elegido por una pareja, que puede ser ninguno, a corto plazo o a largo plazo.
+El dataset que se ha escogido para desarrollar este trabajo ha sido _Contraceptive Method Choice_ (https://archive.ics.uci.edu/ml/datasets/Contraceptive+Method+Choice), obtenido del repositorio de datasets de la Universidad de California-Irvine. Este conjunto de datos determina el método de anticoncepción elegido por una pareja, que puede ser ninguno, a corto plazo o a largo plazo.
 
 ```{r}
 Contraceptive = read.csv("./Datos/cmc.data", header = FALSE)
@@ -34,39 +34,51 @@ head(Contraceptive)
 Para dar un nombre adecuado a cada variable se van a utilizar la información extraída del archivo `cmc.names`. De esta forma también se le dará una nomenclatura adecuada a los valores que puede tomar cada una de las características, convirtiéndolas en un factor cuando sea necesario.
 
 ```{r}
-colnames(Contraceptive) = c("Wife's age", "Wife's education", "Husband's education",
-														"Children", "Wife's religion", "Wife working",
-														"Husband's occupation", "Standard-of-living",
-														"Media exposure", "Contraceptive method")
+colnames(Contraceptive) = c("Wife's age",
+				"Wife's education", "Husband's education",
+				"Children", "Wife's religion", "Wife working",
+				"Husband's occupation", "Standard-of-living",
+				"Media exposure", "Contraceptive method")
+
+# Wife's age
+# Se establecen unos rangos de edad que puedan dividir a la población
+Contraceptive[,1] = discretize(Contraceptive[,1], method = "frequency")
 
 # Wife's education
 Contraceptive[,2] = ordered(Contraceptive[,2], levels = 1:4,
-														labels = c("Low", "Mid-low", "Mid-high", "High"))
+							labels = c("Low", "Mid-low", "Mid-high", "High"))
 
 # Husband's education
 Contraceptive[,3] = ordered(Contraceptive[,3], levels = 1:4,
-														labels = c("Low", "Mid-low", "Mid-high", "High"))
+							labels = c("Low", "Mid-low", "Mid-high", "High"))
+
+# Number of born children
+Contraceptive[,4] = discretizeDF(Contraceptive[,4], method = "frequency")
 
 # Wife's religion
 Contraceptive[,5] = factor(Contraceptive[,5], levels = 0:1,
-														labels = c("Non-Islam", "Islam"))
+							labels = c("Non-Islam", "Islam"))
 
 # Wife working
 Contraceptive[,6] = factor(Contraceptive[,6], levels = 0:1,
-														labels = c("Yes", "No"))
-									# Â¡No es un error! "0" significa "sÃ­" en esta variable...
+							labels = c("Yes", "No"))
+							# ¡No es un error! "0" significa "sí" en esta variable...
+
+# Husband's occupation (¡no especificado por el dataset!)
+Contraceptive[,7] = ordered(Contraceptive[,7], levels = 1:4,
+							labels = c("Low", "Mid-low", "Mid-high", "High"))
 
 # Standard-of-living
 Contraceptive[,8] = ordered(Contraceptive[,8], levels = 1:4,
-														labels = c("Low", "Mid-low", "Mid-high", "High"))
+							labels = c("Low", "Mid-low", "Mid-high", "High"))
 
 # Media exposure
 Contraceptive[,9] = factor(Contraceptive[,9], levels = 0:1,
-														labels = c("Good", "Not good"))
+							labels = c("Good", "Not good"))
 
 # Contraceptive method
 Contraceptive[,10] = factor(Contraceptive[,10], levels = 1:3,
-														labels = c("No-use", "Long-term", "Short-term"))
+							labels = c("No-use", "Long-term", "Short-term"))
 
 head(Contraceptive)
 ```
@@ -74,4 +86,13 @@ head(Contraceptive)
 Cabe destacar que para la variable "Husband's occupation" no se especifica en la información del dataset el significado de los distintos valores, por lo que si aparece en futuras reglas o itemsets se tratarán estos valores de forma similar al resto de variables, siendo 1 el de valor más bajo y 4 el más alto.
 
 Ahora que los datos son más legibles e interpretables se puede proceder a extraer itemsets frecuentes.
+
+## Transacciones e itemsets de interés
+
+En primer lugar se van a crear las transacciones para la base de datos ya modificada. Para ello se utiliza la función `as`, indicando "transactions" como parámetro a convertir.
+
+```{r}
+ContraceptiveT = as(Contraceptive, "transactions")
+summary(ContraceptiveT)
+```
 
