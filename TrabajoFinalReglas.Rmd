@@ -1,6 +1,6 @@
 ---
 title: "Trabajo Reglas Asociación"
-author: "Juanjo Sierra"
+author: "Juan José Sierra González"
 date: "27 de enero de 2019"
 output: pdf_document
 ---
@@ -64,7 +64,8 @@ colnames(Contraceptive) = c("Wife's age",
 
 # Wife's age
 # Se establecen unos rangos de edad que puedan dividir a la población
-Contraceptive[,1] = discretize(Contraceptive[,1], method = "frequency")
+Contraceptive[,1] = cut(Contraceptive[,1], c(16,24,32,40,50), right = FALSE,
+              labels = c("Young", "Mid-age", "Adult", "Old"))
 
 # Wife's education
 Contraceptive[,2] = ordered(Contraceptive[,2], levels = 1:4,
@@ -75,7 +76,8 @@ Contraceptive[,3] = ordered(Contraceptive[,3], levels = 1:4,
 							labels = c("Low", "Mid-low", "Mid-high", "High"))
 
 # Number of born children
-Contraceptive[,4] = discretizeDF(Contraceptive[,4], method = "frequency")
+Contraceptive[,4] = cut(Contraceptive[,4], c(0,1,3,5,8,20), right = FALSE,
+              labels = c("0", "1-2", "3-4", "5-8", "9+"))
 
 # Wife's religion
 Contraceptive[,5] = factor(Contraceptive[,5], levels = 0:1,
@@ -101,13 +103,19 @@ Contraceptive[,9] = factor(Contraceptive[,9], levels = 0:1,
 # Contraceptive method
 Contraceptive[,10] = factor(Contraceptive[,10], levels = 1:3,
 							labels = c("No-use", "Long-term", "Short-term"))
-
-head(Contraceptive)
 ```
 
 Cabe destacar que para la variable "Husband's occupation" no se especifica en la información del dataset el significado de los distintos valores, por lo que si aparece en futuras reglas o itemsets se tratarán estos valores de forma similar al resto de variables, siendo 1 el de valor más bajo y 4 el más alto.
 
-Ahora que los datos son más legibles e interpretables se puede proceder a extraer itemsets frecuentes.
+Se puede echar un vistazo a los valores más comunes del dataset utilizando la función `summary`:
+
+```{r}
+summary(Contraceptive)
+```
+
+En este resumen obtenido se observan los valores más frecuentes para cada variable. En general se puede observar que se trata de una población mayoritariamente musulmana donde hay bastante propensidad a tener hijos. El resto de detalles del dataset se analizarán cuando se obtengan los itemsets frecuentes y las reglas.
+
+Ahora los datos son más legibles e interpretables, y se puede proceder a realizar un análisis más profundo y comenzar extrayendo itemsets frecuentes.
 
 ## Transacciones e itemsets de interés
 
