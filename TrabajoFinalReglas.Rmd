@@ -47,7 +47,7 @@ Estas son las variables que contiene este dataset:
 
 - **Wife working** → La mujer se encuentra trabajando o no.
 
-- **Husband's occupation** → Trabajo del hombre.
+- **Husband's occupation** → Cualificación del trabajo del hombre.
 
 - **Standard-of-living** → Nivel de vida de la familia.
 
@@ -64,8 +64,8 @@ colnames(Contraceptive) = c("Wife's age",
 
 # Wife's age
 # Se establecen unos rangos de edad que puedan dividir a la población
-Contraceptive[,1] = cut(Contraceptive[,1], c(16,24,32,40,50), right = FALSE,
-              labels = c("Young", "Mid-age", "Adult", "Old"))
+Contraceptive[,1] = cut(Contraceptive[,1], c(16,22,30,40,50), right = FALSE,
+              labels = c("Very young", "Young", "Mid-age", "Adult"))
 
 # Wife's education
 Contraceptive[,2] = ordered(Contraceptive[,2], levels = 1:4,
@@ -105,7 +105,7 @@ Contraceptive[,10] = factor(Contraceptive[,10], levels = 1:3,
 							labels = c("No-use", "Long-term", "Short-term"))
 ```
 
-Cabe destacar que para la variable "Husband's occupation" no se especifica en la información del dataset el significado de los distintos valores, por lo que si aparece en futuras reglas o itemsets se tratarán estos valores de forma similar al resto de variables, siendo 1 el de valor más bajo y 4 el más alto.
+Cabe destacar que para la variable "Husband's occupation" no se especifica en la información del dataset el significado de los distintos valores, por lo que si aparece en futuras reglas o itemsets se tratarán estos valores de forma similar al resto de variables, siendo 1 el de valor más bajo y 4 el más alto, es decir, determinará si el trabajo que ejerce el hombre está poco o muy cualificado.
 
 Se puede echar un vistazo a los valores más comunes del dataset utilizando la función `summary`:
 
@@ -126,3 +126,22 @@ ContraceptiveT = as(Contraceptive, "transactions")
 summary(ContraceptiveT)
 ```
 
+Lo primero que se observa con el resumen de las transacciones es una lista de los itemsets más frecuentes. En este caso lo que más predomina sobre todo es una buena exposición a los medios, es decir, casi ninguna familia vive alejada de la actualidad y es conocedora de lo que ocurre a su alrededor y en otras partes del mundo. Como se comentaba antes, la mayor parte de las mujeres encuestadas es de religión musulmana y no trabajan, seguramente porque se trate de un núcleo de población conservadora que relega a las mujeres al trabajo de casa.
+
+Aparte, los hombres son los que tienen una formación académica alta, dado que se trata de una sociedad que ofrece mayores oportunidades a los hombres que a las mujeres. El siguiente itemset más frecuente es un nivel de vida alto, que ya afecta a menos del 50% de la población, pero aunque no supone una mayoría abismal sí que se puede afirmar que en este núcleo poblacional se perpetúan las tradiciones de la religión musulmana y hay pocas familias con dificultades económicas.
+
+A continuación se muestra un gráfico con los itemsets frecuentes (por encima de un 20% de soporte).
+
+```{r}
+itemFrequencyPlot(ContraceptiveT, support = 0.2, cex.names = 0.75)
+```
+
+De este gráfico se pueden confirmar algunas de las teorías anteriores. Una de ellas es que el nivel de vida de la población es en general alto; el rango "alto" y el "medio-alto" se reparten aproximadamente un 80% de las familias de las mujeres encuestadas.
+
+Otra podría ser que los hombres acceden a una mejor educación que las mujeres, o al menos de forma más habitual; se puede observar que el 80% de los hombres han recibido una nivel de educación alto o medio-alto mientras que en las mujeres apenas llega al 70%. Dado que el nivel de formación es en general bastante alto tanto para hombres como para mujeres se puede asegurar que la encuesta se ha realizado en una zona de buenas condiciones económicas, lo que también es respaldado por el alto nivel de vida que aparece en el gráfico.
+
+Además existen pocas mujeres muy jóvenes en la encuesta (la mayoría se encuentra entre los 30 y los 40) lo que también explica que haya mayor nivel de vida de forma general en la población, ya que influye favorablemente al nivel de vida que una pareja tenga edad de trabajar y haya adquirido experiencia como para recibir un buen salario.
+
+Por último, cabe destacar el extraño caso de "Husband's occupation" ya que, como se indicó anteriormente, su significado no viene especificado en la descripción del dataset. Si se asume que sigue la misma nomenclatura que el resto de variables (como se ha hecho para este estudio) ocurre que la mayoría de hombres de la población no tienen un trabajo muy cualificado. Esto entra en contraste con el alto nivel de vida que se ha observado que tiene la población.
+
+Existen dos explicaciones para este hecho: la primera es que se trate de familias adineradas poseedoras de tierras en las que el hombre ejerce un trabajo poco cualificado pero a su vez muy lucrativo y que permite que estas familias gocen de un alto nivel de vida. La segunda es que en la Indonesia de 1987 se concibiese de forma diferente a lo que se piensa hoy en día el concepto de "alto nivel de vida" y "alto nivel de estudios", y realmente no fuera tan extraño encontrarse el caso de una persona con una buena formación académica ejerciendo un puesto de trabajo poco cualificado. Una tercera posible alternativa sería que el significado semántico de la variable "Husband's occupation" difiera de la interpretación que se le ha dado en este estudio, pero debido a la falta de información acerca del dataset se va a optar por asumir la primera opción.
