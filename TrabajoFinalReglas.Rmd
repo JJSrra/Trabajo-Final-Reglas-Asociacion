@@ -24,14 +24,36 @@ library(mlbench)
 
 ## Lectura de los datos
 
-El dataset que se ha escogido para desarrollar este trabajo ha sido _Contraceptive Method Choice_ (https://archive.ics.uci.edu/ml/datasets/Contraceptive+Method+Choice), obtenido del repositorio de datasets de la Universidad de California-Irvine. Este conjunto de datos determina el método anticonceptivo elegido por una pareja, que puede ser ninguno, a corto plazo o a largo plazo.
+El dataset que se ha escogido para desarrollar este trabajo ha sido _Contraceptive Method Choice_ (https://archive.ics.uci.edu/ml/datasets/Contraceptive+Method+Choice), obtenido del repositorio de datasets de la Universidad de California-Irvine. Este conjunto de datos determina el método anticonceptivo elegido por una pareja, que puede ser ninguno, a corto plazo o a largo plazo. Las mujeres que forman parte de este conjunto son mujeres casadas que no estaban embarazadas o no lo sabían en el momento de la recopilación de los datos, según la información del propio dataset.
 
 ```{r}
 Contraceptive = read.csv("./Datos/cmc.data", header = FALSE)
 head(Contraceptive)
 ```
 
-Para dar un nombre adecuado a cada variable se va a utilizar la información extraída del archivo `cmc.names`. De esta forma también se le dará una nomenclatura adecuada a los valores que puede tomar cada una de las características, convirtiéndolas en un factor cuando sea necesario.
+Para dar un nombre adecuado a cada variable se va a utilizar la información extraída del archivo `cmc.names`. De esta forma también se le dará una nomenclatura adecuada a los valores que puede tomar cada una de las características, convirtiéndolas en un factor cuando sea necesario. Se tienen en cuenta datos sobre cada uno de los integrantes de la pareja y sobre la familia en general.
+
+Estas son las variables que contiene este dataset:
+
+- **Wife's age** → La edad de la mujer.
+
+- **Wife's education** → La formación académica de la mujer.
+
+- **Husband's education** → La formación académica del hombre.
+
+- **Children** → La cantidad de hijos que ha tenido la pareja.
+
+- **Wife's religion** → La mujer es de religión musulmana o no.
+
+- **Wife working** → La mujer se encuentra trabajando o no.
+
+- **Husband's occupation** → Trabajo del hombre.
+
+- **Standard-of-living** → Nivel de vida de la familia.
+
+- **Media exposure** → Exposición a los medios (tienen buena cobertura mediática o no).
+
+- **Contraceptive method** → Método anticonceptivo utilizado.
 
 ```{r}
 colnames(Contraceptive) = c("Wife's age",
