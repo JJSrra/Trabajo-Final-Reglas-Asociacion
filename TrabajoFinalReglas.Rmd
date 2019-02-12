@@ -7,26 +7,19 @@ output: pdf_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-```
-
-En este trabajo final sobre **reglas de asociación** se ha seleccionado un dataset sobre el que trabajar obteniendo reglas que resulten de interés y que aporten información a los datos que ya se poseen. A continuación se estudiarán los itemsets frecuentes, maximales y cerrados, se obtendrán las reglas correspondientes al mínimo soporte establecido, y en general se hará uso de las técnicas aprendidas durante el curso para así alcanzar el objetivo de la práctica.
-
-## Carga de librerías
-
-En primer lugar es necesario cargar las librerías necesarias para trabajar con reglas de asociación. En el caso de este trabajo se van a utilizar las siguientes. 
-
-```{r}
 library(arules)
 library(arulesViz)
 library(pmml)
 library(mlbench)
 ```
 
+En este trabajo final sobre **reglas de asociación** se ha seleccionado un dataset sobre el que trabajar obteniendo reglas que resulten de interés y que aporten información a los datos que ya se poseen. A continuación se estudiarán los itemsets frecuentes, maximales y cerrados, se obtendrán las reglas correspondientes al mínimo soporte establecido, y en general se hará uso de las técnicas aprendidas durante el curso para así alcanzar el objetivo de la práctica.
+
 ## Lectura de los datos
 
 El dataset que se ha escogido para desarrollar este trabajo ha sido _Contraceptive Method Choice_ (https://archive.ics.uci.edu/ml/datasets/Contraceptive+Method+Choice), obtenido del repositorio de datasets de la Universidad de California-Irvine. Este conjunto de datos determina el método anticonceptivo elegido por una pareja, que puede ser ninguno, a corto plazo o a largo plazo. Las mujeres que forman parte de este conjunto son mujeres casadas que no estaban embarazadas o no lo sabían en el momento de la recopilación de los datos, según la información del propio dataset.
 
-```{r}
+```{r include=FALSE}
 Contraceptive = read.csv("./Datos/cmc.data", header = FALSE)
 head(Contraceptive)
 ```
@@ -55,7 +48,7 @@ Estas son las variables que contiene este dataset:
 
 - **Contraceptive method** → Método anticonceptivo utilizado.
 
-```{r}
+```{r include=FALSE}
 colnames(Contraceptive) = c("Wife's age",
 				"Wife's education", "Husband's education",
 				"Children", "Wife's religion", "Wife working",
@@ -107,21 +100,21 @@ Contraceptive[,10] = factor(Contraceptive[,10], levels = 1:3,
 
 Cabe destacar que para la variable "Husband's occupation" no se especifica en la información del dataset el significado de los distintos valores, por lo que si aparece en futuras reglas o itemsets se tratarán estos valores de forma similar al resto de variables, siendo 1 el de valor más bajo y 4 el más alto, es decir, determinará si el trabajo que ejerce el hombre está poco o muy cualificado.
 
-Se puede echar un vistazo a los valores más comunes del dataset utilizando la función `summary`:
+Se puede echar un vistazo a los valores más comunes del dataset utilizando la función `summary`.
 
 ```{r}
 summary(Contraceptive)
 ```
 
-En este resumen obtenido se observan los valores más frecuentes para cada variable. En general se puede observar que se trata de una población mayoritariamente musulmana donde hay bastante propensidad a tener hijos. El resto de detalles del dataset se analizarán cuando se obtengan los itemsets frecuentes y las reglas.
+En el resumen obtenido se observan los valores más frecuentes para cada variable. En general se puede observar que se trata de una población mayoritariamente musulmana donde hay bastante propensidad a tener hijos. El resto de detalles del dataset se analizarán cuando se obtengan los itemsets frecuentes y las reglas.
 
 Ahora los datos son más legibles e interpretables, y se puede proceder a realizar un análisis más profundo y comenzar extrayendo itemsets frecuentes.
 
 ## Transacciones e itemsets de interés
 
-En primer lugar se van a crear las transacciones para la base de datos ya modificada. Para ello se utiliza la función `as`, indicando "transactions" como parámetro a convertir.
+En primer lugar se van a crear las transacciones para la base de datos ya modificada. Para ello se utiliza la función `as`, indicando `"transactions"` como parámetro a convertir.
 
-```{r}
+```{r include=FALSE}
 ContraceptiveT = as(Contraceptive, "transactions")
 summary(ContraceptiveT)
 ```
@@ -145,3 +138,20 @@ Además existen pocas mujeres muy jóvenes en la encuesta (la mayoría se encuen
 Por último, cabe destacar el extraño caso de "Husband's occupation" ya que, como se indicó anteriormente, su significado no viene especificado en la descripción del dataset. Si se asume que sigue la misma nomenclatura que el resto de variables (como se ha hecho para este estudio) ocurre que la mayoría de hombres de la población no tienen un trabajo muy cualificado. Esto entra en contraste con el alto nivel de vida que se ha observado que tiene la población.
 
 Existen dos explicaciones para este hecho: la primera es que se trate de familias adineradas poseedoras de tierras en las que el hombre ejerce un trabajo poco cualificado pero a su vez muy lucrativo y que permite que estas familias gocen de un alto nivel de vida. La segunda es que en la Indonesia de 1987 se concibiese de forma diferente a lo que se piensa hoy en día el concepto de "alto nivel de vida" y "alto nivel de estudios", y realmente no fuera tan extraño encontrarse el caso de una persona con una buena formación académica ejerciendo un puesto de trabajo poco cualificado. Una tercera posible alternativa sería que el significado semántico de la variable "Husband's occupation" difiera de la interpretación que se le ha dado en este estudio, pero debido a la falta de información acerca del dataset se va a optar por asumir la primera opción.
+
+## Reglas con Apriori
+
+Ahora que el dataset y sus itemsets frecuentes han sido analizados y se tiene una visión general de la población bastante cercada, se puede utilizar el **algoritmo Apriori** para empezar a extraer reglas de asociación que aporten nueva información hasta ahora desconocida. Para que las reglas sean suficientemente significativas se van a fijar los parámetros mínimos de soporte y confianza a 0.2 y 0.8 respectivamente.
+
+De estas reglas obtenidas, tiene sentido mirar aquellas que no tienen un soporte especialmente alto ni se cumplen siempre (una confianza de 1 no es interesante porque es casi seguro que esté reflejando información obvia y lógica).
+
+```{r include=FALSE}
+reglas = apriori(ContraceptiveT, parameter = list(support = 0.2,
+                                  confidence = 0.8, minlen = 2))
+
+mejoresReglas = subset(reglas,
+                subset = support < 0.4 & confidence < 1 & lift > 1)
+
+inspect(mejoresReglas)
+```
+
