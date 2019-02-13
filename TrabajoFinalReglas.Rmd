@@ -28,25 +28,25 @@ Para dar un nombre adecuado a cada variable se va a utilizar la información ext
 
 Estas son las variables que contiene este dataset:
 
-- **Wife's age** → La edad de la mujer.
+- **Wife's age** → La edad de la mujer. Se divide en los siguientes rangos: muy joven (16-21), joven (22-29), mediana edad (30-39) y adulta (40+).
 
-- **Wife's education** → La formación académica de la mujer.
+- **Wife's education** → La formación académica de la mujer. Se divide en 4 rangos: baja, media-baja, media-alta y alta.
 
-- **Husband's education** → La formación académica del hombre.
+- **Husband's education** → La formación académica del hombre. Se divide en 4 rangos: baja, media-baja, media-alta y alta.
 
-- **Children** → La cantidad de hijos que ha tenido la pareja.
+- **Children** → La cantidad de hijos que ha tenido la pareja. Se divide en estos grupos: 0, 1-2, 3-4, 5-8 y 9+.
 
 - **Wife's religion** → La mujer es de religión musulmana o no.
 
 - **Wife working** → La mujer se encuentra trabajando o no.
 
-- **Husband's occupation** → Cualificación del trabajo del hombre.
+- **Husband's occupation** → Cualificación del trabajo del hombre. Cabe destacar que para esta variable **no se especifica** en la información del dataset el significado de los distintos valores. En base a los primeros resultados que se pueden visualizar acerca del dataset (a continuación) se ha optado por interpretar los valores de 1 a 4 como 1 el más cualificado y 4 el menos.
 
-- **Standard-of-living** → Nivel de vida de la familia.
+- **Standard-of-living** → Nivel de vida de la familia. Dividido en bajo, medio-bajo, medio-alto y alto.
 
 - **Media exposure** → Exposición a los medios (tienen buena cobertura mediática o no).
 
-- **Contraceptive method** → Método anticonceptivo utilizado.
+- **Contraceptive method** → Método anticonceptivo utilizado. Dividido en los siguientes grupos: no utilizan, utilizan métodos a corto plazo y utilizan métodos a largo plazo.
 
 ```{r include=FALSE}
 colnames(Contraceptive) = c("Wife's age",
@@ -83,7 +83,7 @@ Contraceptive[,6] = factor(Contraceptive[,6], levels = 0:1,
 
 # Husband's occupation (?no especificado por el dataset!)
 Contraceptive[,7] = ordered(Contraceptive[,7], levels = 1:4,
-							labels = c("Low", "Mid-low", "Mid-high", "High"))
+							labels = c("High", "Mid-high", "Mid-low", "Low"))
 
 # Standard-of-living
 Contraceptive[,8] = ordered(Contraceptive[,8], levels = 1:4,
@@ -97,8 +97,6 @@ Contraceptive[,9] = factor(Contraceptive[,9], levels = 0:1,
 Contraceptive[,10] = factor(Contraceptive[,10], levels = 1:3,
 							labels = c("No-use", "Long-term", "Short-term"))
 ```
-
-Cabe destacar que para la variable "Husband's occupation" no se especifica en la información del dataset el significado de los distintos valores, por lo que si aparece en futuras reglas o itemsets se tratarán estos valores de forma similar al resto de variables, siendo 1 el de valor más bajo y 4 el más alto, es decir, determinará si el trabajo que ejerce el hombre está poco o muy cualificado.
 
 Se puede echar un vistazo a los valores más comunes del dataset utilizando la función `summary`.
 
@@ -135,9 +133,11 @@ Otra podría ser que los hombres acceden a una mejor educación que las mujeres,
 
 Además existen pocas mujeres muy jóvenes en la encuesta (la mayoría se encuentra entre los 30 y los 40) lo que también explica que haya mayor nivel de vida de forma general en la población, ya que influye favorablemente al nivel de vida que una pareja tenga edad de trabajar y haya adquirido experiencia como para recibir un buen salario.
 
-Por último, cabe destacar el extraño caso de "Husband's occupation" ya que, como se indicó anteriormente, su significado no viene especificado en la descripción del dataset. Si se asume que sigue la misma nomenclatura que el resto de variables (como se ha hecho para este estudio) ocurre que la mayoría de hombres de la población no tienen un trabajo muy cualificado. Esto entra en contraste con el alto nivel de vida que se ha observado que tiene la población.
+Por último, cabe destacar el curioso caso de "Husband's occupation" ya que, como se indicó anteriormente, su significado no viene especificado en la descripción del dataset. Si se asume que sigue la nomenclatura que se ha decidido para este estudio ocurre que la mayoría de hombres de la población tienen un trabajo muy cualificado. Esto entra dentro de lo esperado considerando el alto nivel de vida que se ha observado que tiene la población.
 
-Existen dos explicaciones para este hecho: la primera es que se trate de familias adineradas poseedoras de tierras en las que el hombre ejerce un trabajo poco cualificado pero a su vez muy lucrativo y que permite que estas familias gocen de un alto nivel de vida. La segunda es que en la Indonesia de 1987 se concibiese de forma diferente a lo que se piensa hoy en día el concepto de "alto nivel de vida" y "alto nivel de estudios", y realmente no fuera tan extraño encontrarse el caso de una persona con una buena formación académica ejerciendo un puesto de trabajo poco cualificado. Una tercera posible alternativa sería que el significado semántico de la variable "Husband's occupation" difiera de la interpretación que se le ha dado en este estudio, pero debido a la falta de información acerca del dataset se va a optar por asumir la primera opción.
+Pero, ¿y si el significado semántico de la variable fuese justo el contrario y hubiese muchísimos hombres con trabajos poco cualificados? Existirían dos explicaciones para este hecho: la primera es que se tratase de familias adineradas poseedoras de tierras en las que el hombre ejerce un trabajo poco cualificado pero a su vez muy lucrativo. Indonesia es una tierra donde abundan los recursos naturales, y trabajar estos recursos podría permitir que estas familias gozasen de un alto nivel de vida. La segunda es que en la Indonesia de 1987 se concibiese de forma diferente a lo que se piensa hoy en día el concepto de "alto nivel de vida" y "alto nivel de estudios", y realmente no fuera tan extraño encontrarse el caso de una persona con una buena formación académica ejerciendo un puesto de trabajo poco cualificado. 
+
+Asumiendo que el caso que se ha decidido en el apartado del análisis del dataset es el correcto, se va a seguir optando por la solución que parece la más coherente.
 
 ## Reglas con Apriori
 
@@ -169,6 +169,6 @@ No obstante, si uno se limita a comprobar aquellas reglas simples (sólo una con
 
 - Las mujeres que **no son musulmanas** están casadas con hombres con una **alta formación académica**.
 
-- Los hombres que tienen un trabajo **poco cualificado** tienen una **alta formación académica**.
+- Los hombres que tienen un trabajo **altamente cualificado** tienen una **alta formación académica**.
 
 - Las mujeres con una **alta formación académica** están casadas con hombres de igual formación.
