@@ -141,17 +141,34 @@ Existen dos explicaciones para este hecho: la primera es que se trate de familia
 
 ## Reglas con Apriori
 
-Ahora que el dataset y sus itemsets frecuentes han sido analizados y se tiene una visión general de la población bastante cercada, se puede utilizar el **algoritmo Apriori** para empezar a extraer reglas de asociación que aporten nueva información hasta ahora desconocida. Para que las reglas sean suficientemente significativas se van a fijar los parámetros mínimos de soporte y confianza a 0.2 y 0.8 respectivamente.
+Ahora que el dataset y sus itemsets frecuentes han sido analizados y se tiene una visión general de la población bastante cercada, se puede utilizar el **algoritmo Apriori** para empezar a extraer reglas de asociación que aporten nueva información hasta ahora desconocida. Para que las reglas sean suficientemente significativas se van a fijar los parámetros mínimos de soporte y confianza a 0.1 y 0.8 respectivamente.
 
 De estas reglas obtenidas, tiene sentido mirar aquellas que no tienen un soporte especialmente alto ni se cumplen siempre (una confianza de 1 no es interesante porque es casi seguro que esté reflejando información obvia y lógica).
 
-```{r include=FALSE}
-reglas = apriori(ContraceptiveT, parameter = list(support = 0.2,
+```{r}
+reglas = apriori(ContraceptiveT, parameter = list(support = 0.1,
                                   confidence = 0.8, minlen = 2))
 
 mejoresReglas = subset(reglas,
                 subset = support < 0.4 & confidence < 1 & lift > 1)
 
+# Eliminar reglas redundantes
+esSubconjunto = is.subset(mejoresReglas, mejoresReglas)
+esSubconjunto[lower.tri(esSubconjunto, diag = TRUE)] = FALSE
+redundantes = colSums(esSubconjunto, na.rm=TRUE) >= 1
+mejoresReglas = mejoresReglas[!redundantes]
+```
+
+```{r include=FALSE}
 inspect(mejoresReglas)
 ```
 
+Lo que más llama la atención de las reglas generadas (eliminando aquellas redundantes o que son subconjuntos de otras reglas) es que en casi todos los consecuentes aparecen las variables "Media Exposure" y "Wife's religion", con los respectivos valores "Good" e "Islam", ya que son los predominantes para estos atributos. Como se pudo observar en el resumen del dataset que se mostró anteriormente, estas variables son binarias y la inmensa mayoría de la población sigue una de las dos alternativas; en este caso se trata de un núcleo con buen acceso a la cobertura mediática y con una población musulmana dominante. La presencia de estas dos características provoca que casi cualquier regla tenga una de ellas en el consecuente, relegando muchas de esas reglas a simples vueltas de tuerca al anterior gráfico mostrado volviendo a aportar la misma información.
+
+No obstante, si uno se limita a comprobar aquellas reglas simples (sólo una condición en el antecedente) que no están afectadas por estas variables puede encontrar algunos detalles interesantes:
+
+- Las mujeres que **no son musulmanas** están casadas con hombres con una **alta formación académica**.
+
+- Los hombres que tienen un trabajo **poco cualificado** tienen una **alta formación académica**.
+
+- Las mujeres con una **alta formación académica** están casadas con hombres de igual formación.
