@@ -156,11 +156,11 @@ mejoresReglas = subset(reglas,
 esSubconjunto = is.subset(mejoresReglas, mejoresReglas)
 esSubconjunto[lower.tri(esSubconjunto, diag = TRUE)] = FALSE
 redundantes = colSums(esSubconjunto, na.rm=TRUE) >= 1
-mejoresReglas = mejoresReglas[!redundantes]
+subsetMejoresReglas = mejoresReglas[!redundantes]
 ```
 
 ```{r include=FALSE}
-inspect(mejoresReglas)
+inspect(subsetMejoresReglas)
 ```
 
 Lo que más llama la atención de las reglas generadas (eliminando aquellas redundantes o que son subconjuntos de otras reglas) es que en casi todos los consecuentes aparecen las variables "Media Exposure" y "Wife's religion", con los respectivos valores "Good" e "Islam", ya que son los predominantes para estos atributos. Como se pudo observar en el resumen del dataset que se mostró anteriormente, estas variables son binarias y la inmensa mayoría de la población sigue una de las dos alternativas; en este caso se trata de un núcleo con buen acceso a la cobertura mediática y con una población musulmana dominante. La presencia de estas dos características provoca que casi cualquier regla tenga una de ellas en el consecuente, relegando muchas de esas reglas a simples vueltas de tuerca al anterior gráfico mostrado volviendo a aportar la misma información.
@@ -172,3 +172,14 @@ No obstante, si uno se limita a comprobar aquellas reglas simples (sólo una con
 - Los hombres que tienen un trabajo **altamente cualificado** tienen una **alta formación académica**.
 
 - Las mujeres con una **alta formación académica** están casadas con hombres de igual formación.
+
+En base a estas reglas se podría plantear alguna hipótesis, como que las personas tienden a casarse con aquellas con quienes comparten un nivel de formación similar. Antes de seguir formulando hipótesis quedan por revisar las reglas anteriores que tienen más de un ítem en el antecedente. De dichas reglas extraemos el siguiente conocimiento:
+
+- Si su marido tiene un **trabajo altamente cualificado** y su **estándar de vida es alto**, la mujer tiene una **formación académica alta**.
+
+- Las mujeres **jóvenes** con un marido con un **trabajo poco cualificado** usan métodos anticonceptivos a **corto plazo** y **no trabajan**.
+
+- Las mujeres **musulmanas** con **3-4 hijos** y cuyo marido tiene un **buen trabajo no trabajan**.
+
+- Las mujeres con un **nivel de vida elevado** y que usan métodos anticonceptivos a **largo plazo** están casadas con un hombre con una **alta formación**.
+
