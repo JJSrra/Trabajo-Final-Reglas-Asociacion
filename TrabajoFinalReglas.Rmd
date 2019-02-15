@@ -190,3 +190,42 @@ Otro prototipo de familia que se deduce de estas reglas es aquella menos tradici
 Se da el caso también de que existe una gran cantidad de mujeres jóvenes que encajan en el perfil que se consideraría común en la actualidad. Se trata de mujeres que no tienen trabajo, y cuyo marido trabaja en un oficio poco cualificado. Es claramente un perfil de pareja joven que apenas acaba de comenzar en el mundo laboral, si bien aún no se puede asegurar si la familia es tradicional o no; en una familia tradicional la mujer seguirá sin trabajar y el marido proliferará hasta conseguir un puesto más cualificado (el caso anterior). En el caso de que se trate de una familia no tradicional, la situación por la que están pasando puede deberse simplemente al duro inicio en el mercado laboral en una sociedad donde hay una alta formación educativa, es decir, mucha gente (sobre todo gente adulta) estará capacitada para ejercer las profesiones más cualificadas. En un futuro esta
 
 Además, en las reglas ha resaltado la presencia de un gran porcentaje de la población (tanto mujeres como hombres) que tienen un nivel de formación alta. Esto se había notado anteriormente, comprobando que había un mayor porcentaje de hombres que de mujeres que conseguían este alto nivel educativo. Sin embargo, en base al resto de información que se va conociendo del dataset se puede responsabilizar de este hecho a la globalización que está sufriendo el mundo. Los datos son relativamente recientes (hace 30 años) y las poblaciones de prácticamente todo el mundo están accediendo a una cantidad de información y recursos los cuales hace un siglo ni siquiera podían plantearse. Aun así se sigue notando el sesgo del género y las mujeres tienen un peor acceso a la educación que los hombres, que muchas veces por motivos familiares (dentro de familias más tradicionales, como parecen ser las que hay en este dataset) fuerzan al hombre a continuar sus estudios y a la mujer a que cuide de los hijos y se encargue del hogar.
+
+## Análisis con ítems negados
+
+Para el análisis con ítems negados se va a sustituir la variable "Wife's age" por las variables "Wife very young", "Wife young", "Wife middle-aged" y "Wife adult" que simbolicen de forma booleana si se da o no se da cada uno de los casos para cada mujer del conjunto de datos. Se va a utilizar esta variable debido a que la hipótesis realizada en el apartado anterior ha demostrado que puede ser interesante ver cómo se comportan las mujeres en función de su rango de edad, ya que se han distinguido algunos grupos que varían sustancialmente entre ellos.
+
+```{r include=FALSE}
+veryYoung = Contraceptive$`Wife's age` == "Very young"
+young = Contraceptive$`Wife's age` == "Young"
+midAge = Contraceptive$`Wife's age` == "Mid-age"
+adult = Contraceptive$`Wife's age` == "Adult"
+
+Contraceptive = Contraceptive[,-1]
+Contraceptive = cbind(Contraceptive, veryYoung, young, midAge, adult)
+Contraceptive = sapply(Contraceptive, as.factor)
+Contraceptive = as.data.frame(Contraceptive)
+
+ContraceptiveT = as(Contraceptive, "transactions")
+summary(ContraceptiveT)
+
+reglas = apriori(ContraceptiveT, parameter = list(support = 0.1,
+                                  confidence = 0.8, minlen = 2))
+
+mejoresReglas = subset(reglas,
+                subset = support < 0.4 & confidence < 1 & lift > 1)
+
+# Eliminar reglas redundantes
+esSubconjunto = is.subset(mejoresReglas, mejoresReglas)
+esSubconjunto[lower.tri(esSubconjunto, diag = TRUE)] = FALSE
+redundantes = colSums(esSubconjunto, na.rm=TRUE) >= 1
+subsetMejoresReglas = mejoresReglas[!redundantes]
+
+inspect(subsetMejoresReglas)
+```
+
+Realizando el análisis de reglas negadas se pueden encontrar detalles interesantes que antes no aparecían. Por ejemplo, una de las primeras reglas generadas indica que si la educación de la mujer es baja, **no es muy joven**. Esto potencia la hipótesis de la globalización, que ayuda a que las nuevas generaciones del momento accediesen a muchísima más información y pudieran formarse desde muy jóvenes. En esta población las mujeres que han quedado analfabetas o con una educación pobre son de una edad más avanzada y en casi ningún caso pertenecientes a la juventud.
+
+Otra regla curiosa es que las mujeres que tienen 1 ó 2 hijos generalmente **no son adultas** (no tienen 40 años o más). Es decir, en la población tratada en este estudio hay mucha tendencia a tener hijos. Se veía en un solo vistazo a los datos la propensidad a la maternidad entre las mujeres de la población, pero esta regla ayuda a confirmarlo. La nueva información que aporta es que generalmente las mujeres con pocos hijos **siguen siendo jóvenes o de mediana edad**, es decir, **es muy probable que continúen teniendo descendencia**. No hay muchas mujeres que tengan una descendencia tan corta y no tengan la posibilidad de ampliarla entre las mujeres de la población. Toda esta hipótesis queda reforzada por reglas que afirman que las mujeres con 5-8 hijos no son jóvenes ni muy jóvenes, ya que la descendencia aumenta lógicamente con la propia edad de la mujer.
+
+Una última regla que también da una información interesante es que las mujeres que **trabajan** y que tienen un marido con un **alto nivel académico no son adultas**. Si analizamos el punto de vista de las mujeres no adultas que siguen este patrón es asumible que hayan dejado más bien atrás el modelo de familia tradicional y tanto ella como el marido trabajen para ayudar de forma equitativa a la economía familiar. Si por otro lado se analiza esta regla desde el punto de vista de las mujeres adultas que tienen un marido con una buena formación, en una población tan tradicional es habitual que no se dediquen a trabajar, más a una edad ya avanzada con una familia formada y que tiene buen sustento.
