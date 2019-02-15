@@ -17,7 +17,7 @@ En este trabajo final sobre **reglas de asociación** se ha seleccionado un data
 
 ## Lectura de los datos
 
-El dataset que se ha escogido para desarrollar este trabajo ha sido _Contraceptive Method Choice_ (https://archive.ics.uci.edu/ml/datasets/Contraceptive+Method+Choice), obtenido del repositorio de datasets de la Universidad de California-Irvine. Este conjunto de datos determina el método anticonceptivo elegido por una pareja, que puede ser ninguno, a corto plazo o a largo plazo. Las mujeres que forman parte de este conjunto son mujeres casadas que no estaban embarazadas o no lo sabían en el momento de la recopilación de los datos, según la información del propio dataset.
+El dataset que se ha escogido para desarrollar este trabajo ha sido _Contraceptive Method Choice_ (https://archive.ics.uci.edu/ml/datasets/Contraceptive+Method+Choice), obtenido del repositorio de datasets de la Universidad de California-Irvine. Este conjunto de datos determina el método anticonceptivo elegido por una pareja de la Indonesia de 1987, que puede ser ninguno, a corto plazo o a largo plazo. Las mujeres que forman parte de este conjunto son mujeres casadas que no estaban embarazadas o no lo sabían en el momento de la recopilación de los datos, según la información del propio dataset.
 
 ```{r include=FALSE}
 Contraceptive = read.csv("./Datos/cmc.data", header = FALSE)
@@ -141,16 +141,16 @@ Asumiendo que el caso que se ha decidido en el apartado del análisis del datase
 
 ## Reglas con Apriori
 
-Ahora que el dataset y sus itemsets frecuentes han sido analizados y se tiene una visión general de la población bastante cercada, se puede utilizar el **algoritmo Apriori** para empezar a extraer reglas de asociación que aporten nueva información hasta ahora desconocida. Para que las reglas sean suficientemente significativas se van a fijar los parámetros mínimos de soporte y confianza a 0.1 y 0.8 respectivamente.
+Ahora que el dataset y sus itemsets frecuentes han sido analizados y se tiene una visión general de la población bastante cercada, se puede utilizar el **algoritmo Apriori** para empezar a extraer reglas de asociación que aporten nueva información hasta ahora desconocida. Se van a generar reglas con los parámetros mínimos de soporte y confianza a 0.05 y 0.8 respectivamente. Sin embargo, las más significativas serán las que tengan al menos un 10% de soporte. Se generan el resto por si son necesarias en el futuro.
 
 De estas reglas obtenidas, tiene sentido mirar aquellas que no tienen un soporte especialmente alto ni se cumplen siempre (una confianza de 1 no es interesante porque es casi seguro que esté reflejando información obvia y lógica).
 
 ```{r}
-reglas = apriori(ContraceptiveT, parameter = list(support = 0.1,
+reglas = apriori(ContraceptiveT, parameter = list(support = 0.05,
                                   confidence = 0.8, minlen = 2))
 
 mejoresReglas = subset(reglas,
-                subset = support < 0.4 & confidence < 1 & lift > 1)
+                subset = support > 0.1 & support < 0.4 & confidence < 1 & lift > 1)
 
 # Eliminar reglas redundantes
 esSubconjunto = is.subset(mejoresReglas, mejoresReglas)
@@ -183,3 +183,10 @@ En base a estas reglas se podría plantear alguna hipótesis, como que las perso
 
 - Las mujeres con un **nivel de vida elevado** y que usan métodos anticonceptivos a **largo plazo** están casadas con un hombre con una **alta formación**.
 
+Analizando todas las reglas que se han obtenido y plasmado en este estudio se puede afirmar que existe un gran núcleo de población que muestra la imagen de una familia musulmana tradicional. Para empezar hay una gran cantidad de mujeres que tienen 5 o más hijos, lo que encaja con la definición de familia tradicional. Además, muchas de estas mujeres no trabajan, en especial si su marido tiene un buen trabajo. En este caso, se puede decir que el marido es el único sustento económico de la familia, de nuevo asociado al modelo de familia que ha existido desde hace siglos.
+
+Otro prototipo de familia que se deduce de estas reglas es aquella menos tradicional en la que tanto la mujer como el hombre ocupan un buen puesto de trabajo. En este dataset no se incluye exactamente la cualificación del trabajo de la mujer pero basándose en la alta formación académica que poseen no es de extrañar que sea un trabajo altamente cualificado. Esto también lo refuerza el hecho de que su nivel de vida sea alto, promovido por el hecho de que en este caso no sea el hombre el único que aporta dinero a la familia. Este grupo de mujeres además está formado en su mayoría por no musulmanas, que quizá es la cultura que a día de hoy más limita a las mujeres, siempre desde el punto de vista de sus familias tradicionales y del peso que tienen estas familias en la sociedad.
+
+Se da el caso también de que existe una gran cantidad de mujeres jóvenes que encajan en el perfil que se consideraría común en la actualidad. Se trata de mujeres que no tienen trabajo, y cuyo marido trabaja en un oficio poco cualificado. Es claramente un perfil de pareja joven que apenas acaba de comenzar en el mundo laboral, si bien aún no se puede asegurar si la familia es tradicional o no; en una familia tradicional la mujer seguirá sin trabajar y el marido proliferará hasta conseguir un puesto más cualificado (el caso anterior). En el caso de que se trate de una familia no tradicional, la situación por la que están pasando puede deberse simplemente al duro inicio en el mercado laboral en una sociedad donde hay una alta formación educativa, es decir, mucha gente (sobre todo gente adulta) estará capacitada para ejercer las profesiones más cualificadas. En un futuro esta
+
+Además, en las reglas ha resaltado la presencia de un gran porcentaje de la población (tanto mujeres como hombres) que tienen un nivel de formación alta. Esto se había notado anteriormente, comprobando que había un mayor porcentaje de hombres que de mujeres que conseguían este alto nivel educativo. Sin embargo, en base al resto de información que se va conociendo del dataset se puede responsabilizar de este hecho a la globalización que está sufriendo el mundo. Los datos son relativamente recientes (hace 30 años) y las poblaciones de prácticamente todo el mundo están accediendo a una cantidad de información y recursos los cuales hace un siglo ni siquiera podían plantearse. Aun así se sigue notando el sesgo del género y las mujeres tienen un peor acceso a la educación que los hombres, que muchas veces por motivos familiares (dentro de familias más tradicionales, como parecen ser las que hay en este dataset) fuerzan al hombre a continuar sus estudios y a la mujer a que cuide de los hijos y se encargue del hogar.
