@@ -229,3 +229,68 @@ Realizando el análisis de reglas negadas se pueden encontrar detalles interesan
 Otra regla curiosa es que las mujeres que tienen 1 ó 2 hijos generalmente **no son adultas** (no tienen 40 años o más). Es decir, en la población tratada en este estudio hay mucha tendencia a tener hijos. Se veía en un solo vistazo a los datos la propensidad a la maternidad entre las mujeres de la población, pero esta regla ayuda a confirmarlo. La nueva información que aporta es que generalmente las mujeres con pocos hijos **siguen siendo jóvenes o de mediana edad**, es decir, **es muy probable que continúen teniendo descendencia**. No hay muchas mujeres que tengan una descendencia tan corta y no tengan la posibilidad de ampliarla entre las mujeres de la población. Toda esta hipótesis queda reforzada por reglas que afirman que las mujeres con 5-8 hijos no son jóvenes ni muy jóvenes, ya que la descendencia aumenta lógicamente con la propia edad de la mujer.
 
 Una última regla que también da una información interesante es que las mujeres que **trabajan** y que tienen un marido con un **alto nivel académico no son adultas**. Si analizamos el punto de vista de las mujeres no adultas que siguen este patrón es asumible que hayan dejado más bien atrás el modelo de familia tradicional y tanto ella como el marido trabajen para ayudar de forma equitativa a la economía familiar. Si por otro lado se analiza esta regla desde el punto de vista de las mujeres adultas que tienen un marido con una buena formación, en una población tan tradicional es habitual que no se dediquen a trabajar, más a una edad ya avanzada con una familia formada y que tiene buen sustento.
+
+## Análisis por grupos de reglas
+
+El último apartado del estudio recae sobre los grupos de reglas. En este apartado se va a tratar de extraer información de reglas que contengan un grupo de ítems determinado, bien en el antecedente o bien en el consecuente, y se utilizará para obtener información más en profundidad de algún grupo particular de interés.
+
+El primer grupo de interés que se va a estudiar en este trabajo van a ser las mujeres que tienen muchos hijos. En particular, aquellas que pertenecen al grupo de las que más hijos tienen, 9 o más.
+
+```{r include=FALSE}
+reglas = apriori(ContraceptiveT, parameter = list(support = 0.05,
+                                  confidence = 0.8, minlen = 2))
+
+mejoresReglas = subset(reglas,
+                subset = lhs%in%"Children=9+" &
+                  support < 0.4 & confidence < 1 & lift > 1)
+
+# Eliminar reglas redundantes
+esSubconjunto = is.subset(mejoresReglas, mejoresReglas)
+esSubconjunto[lower.tri(esSubconjunto, diag = TRUE)] = FALSE
+redundantes = colSums(esSubconjunto, na.rm=TRUE) >= 1
+subsetMejoresReglas = mejoresReglas[!redundantes]
+
+inspect(subsetMejoresReglas)
+```
+
+Con relación a las reglas que se han obtenido se han obtenido para 9 o más hijos son muy significativas. Dichas reglas han sido las siguientes:
+
+- Las mujeres que tienen **9 o más hijos no trabajan.**
+
+- Las mujeres que tienen **9 o más hijos son musulmanas.**
+
+Las dos reglas indican claramente que se trata de una mujer en el seno de una familia tradicional musulmana. En estas familias, de nuevo, las mujeres no trabajan más que en el hogar y se limitan a cuidar de los niños. Es interesante ver que la mayoría de las mujeres que tiene 9 o más hijos sigue este patrón, pero es casi más interesante ver que hay un 2% de las mujeres con tantos hijos que no son musulmanas. En una población con tan marcada población de esta religión puede resultar muy extraño encontrarse un caso de una mujer no musulmana que llegue a tener tantos hijos, aunque hay algunas agrupaciones dentro de otras religiones que también son propensos a ello. Con una alta probabilidad las personas que pertenecen a este particular grupo pertenecen a otra vertiente de pensamiento religioso, ya que es más habitual que las personas con tan larga descendencia lo hagan por creencias religiosas.
+
+Otro grupo curioso puede ser el de las mujeres que usan métodos anticonceptivos a largo plazo. En esta sociedad tan marcada por la tradición musulmana (que no usa dichos métodos) es interesante averiguar cosas acerca de las mujeres que sí que los utilizan.
+
+```{r include=FALSE}
+reglas = apriori(ContraceptiveT, parameter = list(support = 0.1,
+                                  confidence = 0.8, minlen = 2))
+
+mejoresReglas = subset(reglas,
+                subset = (lhs%in%"Contraceptive method=Long-term" | 
+                  rhs%in%"Contraceptive method=Long-term") &
+                  support < 0.4 & confidence < 1 & lift > 1)
+
+# Eliminar reglas redundantes
+esSubconjunto = is.subset(mejoresReglas, mejoresReglas)
+esSubconjunto[lower.tri(esSubconjunto, diag = TRUE)] = FALSE
+redundantes = colSums(esSubconjunto, na.rm=TRUE) >= 1
+subsetMejoresReglas = mejoresReglas[!redundantes]
+
+inspect(subsetMejoresReglas)
+```
+
+Las reglas de más interés obtenidas son las siguientes:
+
+- Las mujeres que usan **métodos anticonceptivos a largo plazo no suelen ser muy jóvenes**.
+
+- Las mujeres con **alta formación académica** y que usan **métodos anticonceptivos a largo plazo** están casadas con un hombre **con la misma formación**.
+
+- Las mujeres con **alto nivel de vida** y que usan **métodos anticonceptivos a largo plazo** están casadas con hombres que tienen una **alta formación académica**.
+
+En particular, lo primero que se obtiene es que no son muy jóvenes, lo cual es de esperar porque no tiene mucho sentido comenzar a tomar medidas tan a largo plazo sin tener una familia asentada ni con una buena estabilidad laboral.
+
+Por supuesto, entre las reglas relacionadas con este particular valor del atributo "Contraceptive method" no existe ninguna que lo relacione con la mujer perteneciendo a la cultura musulmana. Si bien alguna pareja puede utilizarlos, desde luego no es lo habitual y se trataría ciertamente de una excepción.
+
+Otros datos en los que profundizar que reflejan las reglas mostradas en el estudio es que tienden a partir de la base de que ambos miembros de la pareja, o al menos el hombre, tienen una alta formación académica. La razón de que se remarque la presencia del hombre recae lógicamente en que hay más hombres con dicha formación que mujeres, pero otra regla refuerza que si ambos tienen un alto nivel de educación este es el método que utilizan. Además, se suma la presencia de un alto nivel de vida. Dependiendo del país y de las condiciones sanitarias es posible que los métodos a largo plazo resulten ser más caros que a corto plazo, siendo más accesibles para familias ya establecidas y que gozan de un estándar de vida más elevado.
